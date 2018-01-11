@@ -4,10 +4,15 @@ package org.qiu4j.framework;/*
  *@date: 19:44 2018/1/6
  */
 
+import org.omg.CORBA.Object;
+import org.qiu4j.framework.bean.Data;
 import org.qiu4j.framework.bean.Handler;
+import org.qiu4j.framework.bean.Param;
+import org.qiu4j.framework.bean.View;
 import org.qiu4j.framework.helper.BeanHelper;
 import org.qiu4j.framework.helper.ConfigHelper;
 import org.qiu4j.framework.helper.ControllerHelper;
+import org.qiu4j.framework.util.*;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
@@ -15,6 +20,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,16 +47,73 @@ public class DispacherServlet extends HttpServlet {
         if(handler != null){
             //获取controller类及其实例
             Class<?> controllerClass = handler.getControllerClass();
-            Object controllerBean = BeanHelper.getBean(controllerClass);
+            java.lang.Object controllerBean = BeanHelper.getBean(controllerClass);
             //获取请求参数对象
-            Map<String,Object> paraMap = new HashMap<String,Object>();
+            Map<String, java.lang.Object> paraMap = new HashMap<String, java.lang.Object>();
             Enumeration<String> paraNames = req.getParameterNames();
             while (paraNames.hasMoreElements()){
                 String paraName = paraNames.nextElement();
                 String paraVale = req.getParameter(paraName);
                 paraMap.put(paraName,paraVale);
             }
-            String body = CodeUtil.
+            String body = CodecUtil.decodeURL(StreamUtil.getString(req.getInputStream()));
+            if(StringUtil.isNotEmpty(body)){
+                String [] params = body.split("&");
+                if(ArrayUtil.isNotEmpty(params)){
+                    for(String param:params){
+                        String[] array = param.split("=");
+                        if(ArrayUtil.isNotEmpty(array)&&array.length ==2){
+                            String paraName = array[0];
+                            String paraValue = array[1];
+                            paraMap.put(paraName,paraValue);
+                        }
+
+
+                    }
+                }
+            }
+
+            Param param = new Param(paraMap);
+            //调用action方法
+            Method actionMethod = handler.getActionMethod();
+            java.lang.Object result = ReflectionUtil.invokeMethod(controllerBean,
+                    actionMethod,param);
+            //处理action方法返回值
+            if(result instanceof View){
+                View view = (View)result;
+                String path = view.getPath();
+                if(StringUtil.isNotEmpty(path)){
+                    if(path.startsWith("/")){
+                        resp.sendRedirect(req.getContextPath() + path);
+                    }else{
+                        Map<String, java.lang.Object> model = view.getModel();
+                        for(Map.Entry<String, java.lang.Object>entry:model.entrySet()){
+                            req.setAttribute(entry.getKey(),entry.getValue());
+                        }
+                        req.getRequestDispatcher(ConfigHelper.getAppJspPath() + path).
+                                forward(req,resp);
+
+                    }
+
+                }
+
+            }else if(result instanceof Data){
+                Data data = (Data)result;
+                //返回JSON数据
+                java.lang.Object model = data.getModel();
+                if(model != null){
+                    resp.setContentType("application/json");
+                    resp.setCharacterEncoding("UTF-8");
+                    PrintWriter writer = resp.getWriter();
+                    String json = JsonUtil.toJson(model);
+                    writer.write(json);
+                    writer.flush();
+                    writer.close();
+                }
+
+
+            }
+
 
 
         }
