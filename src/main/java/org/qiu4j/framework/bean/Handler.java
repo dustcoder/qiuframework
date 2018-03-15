@@ -1,4 +1,5 @@
-package org.qiu4j.framework.bean;/*
+package org.qiu4j.framework.bean;
+/*
  *@Author:WuRen
  *@Description:封装action信息
  *@date: 0:07 2018/1/6

@@ -1,4 +1,5 @@
-package org.qiu4j.framework.helper;/*
+package org.qiu4j.framework.helper;
+/*
  *@Author:WuRen
  *@Description:Bean 助手类
  *@date: 23:18 2018/1/5
@@ -37,5 +38,9 @@ public final class BeanHelper {
             throw new RuntimeException("can not get bean by class"+cls);
         }
         return (T) BEAN_MAP.get(cls);
+    }
+
+    public static void setBean(Class<?> cls,Object obj){
+        BEAN_MAP.put(cls,obj);
     }
 }

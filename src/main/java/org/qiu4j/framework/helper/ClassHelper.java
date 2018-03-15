@@ -8,6 +8,7 @@ import org.qiu4j.framework.annotation.Controller;
 import org.qiu4j.framework.annotation.Service;
 import org.qiu4j.framework.util.ClassUtil;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,6 +65,37 @@ public final class ClassHelper {
         return beanClassSet;
     }
 
+    /*
+     * @Author:WuRen
+     * @Description:
+     * @Date: 2018/3/15
+     * @param:  * @param superClass
+     */
+    public static Set<Class<?>> getClassSetBySuper(Class <?> superClass){
+        Set<Class<?>> classSet = new HashSet<Class<?>>();
+        for(Class<?> cls: CLASS_SET){
+            if(superClass.isAssignableFrom(cls) && !superClass.equals(cls)){
+                classSet.add(cls);
+            }
+        }
+        return  classSet;
+    }
 
+    /*
+     * @Author:WuRen
+     * @Description:获取应用包名下带有某注解的所有类
+     * @Date: 14:41 2018/3/15
+     * @param:  * @param annotationClass
+     */
+    public static Set<Class<?>> getClassSetByAnnotation(Class<? extends Annotation> annotationClass){
+
+        Set<Class<?>> classSet = new HashSet<Class<?>>();
+        for(Class<?> cls: CLASS_SET){
+            if(cls.isAnnotationPresent(annotationClass)){
+                classSet.add(cls);
+            }
+        }
+        return classSet;
+    }
 
 }

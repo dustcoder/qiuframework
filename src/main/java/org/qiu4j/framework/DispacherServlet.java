@@ -4,7 +4,7 @@ package org.qiu4j.framework;/*
  *@date: 19:44 2018/1/6
  */
 
-import org.omg.CORBA.Object;
+
 import org.qiu4j.framework.bean.Data;
 import org.qiu4j.framework.bean.Handler;
 import org.qiu4j.framework.bean.Param;
@@ -36,7 +36,7 @@ public class DispacherServlet extends HttpServlet {
         jspServlet.addMapping(ConfigHelper.getAppJspPath());
         ServletRegistration defaultServlet = servletContext.getServletRegistration("default");
         defaultServlet.addMapping(ConfigHelper.getAppAssetPath() + "*");
-    }
+}
 
     @Override
     protected void service(HttpServletRequest req, HttpServletResponse resp)
